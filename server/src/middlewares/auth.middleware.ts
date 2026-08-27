@@ -1,6 +1,7 @@
 import { Request, Response, NextFunction } from 'express';
 import { sendError } from '../utils/response.util.js';
 import { prisma } from '../db/prisma.js';
+import { verifyAuthToken } from '../utils/encryption.util.js';
 
 export interface AuthenticatedUser {
   id: string;
@@ -20,7 +21,17 @@ declare global {
 
 export async function requireAuth(req: Request, res: Response, next: NextFunction): Promise<void> {
   try {
-    const userId = (req.session as any)?.userId;
+    let userId = (req.session as any)?.userId;
+
+    // Check for Bearer token in Authorization header (for cross-domain / proxy support)
+    const authHeader = req.headers.authorization;
+    if (authHeader && authHeader.startsWith('Bearer ')) {
+      const token = authHeader.substring(7).trim();
+      const verifiedUserId = verifyAuthToken(token);
+      if (verifiedUserId) {
+        userId = verifiedUserId;
+      }
+    }
 
     if (!userId) {
       sendError(res, 'UNAUTHORIZED', 'Authentication required. Please log in.', 401);

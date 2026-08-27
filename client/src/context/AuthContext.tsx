@@ -20,6 +20,18 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const refreshUser = useCallback(async () => {
     try {
       setIsLoading(true);
+
+      // Check if OAuth callback redirected with a token query parameter
+      const params = new URLSearchParams(window.location.search);
+      const tokenParam = params.get('token');
+      if (tokenParam) {
+        localStorage.setItem('nexus_token', tokenParam);
+        // Clean URL to remove the token parameter from address bar
+        params.delete('token');
+        const newSearch = params.toString() ? `?${params.toString()}` : '';
+        window.history.replaceState({}, document.title, window.location.pathname + newSearch);
+      }
+
       const data = await authApi.getMe();
       setUser(data.user);
     } catch (err) {
@@ -39,11 +51,12 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
   const logout = async () => {
     try {
+      localStorage.removeItem('nexus_token');
       await authApi.logout();
-      setUser(null);
-      window.location.href = '/login';
     } catch (err) {
       console.error('Logout error', err);
+    } finally {
+      localStorage.removeItem('nexus_token');
       setUser(null);
       window.location.href = '/login';
     }

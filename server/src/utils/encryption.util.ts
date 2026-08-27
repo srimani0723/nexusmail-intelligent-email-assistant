@@ -50,3 +50,31 @@ export function decrypt(encryptedText: string): string {
 
   return decrypted;
 }
+
+/**
+ * Creates an encrypted authentication token embedding user ID and expiration timestamp.
+ */
+export function createAuthToken(userId: string, expiresInDays = 30): string {
+  const payload = JSON.stringify({
+    userId,
+    exp: Date.now() + expiresInDays * 24 * 60 * 60 * 1000,
+  });
+  return encrypt(payload);
+}
+
+/**
+ * Decrypts and validates an encrypted authentication token.
+ * Returns the userId if valid and not expired; null otherwise.
+ */
+export function verifyAuthToken(token: string): string | null {
+  try {
+    const decrypted = decrypt(token);
+    const data = JSON.parse(decrypted);
+    if (!data.userId || !data.exp || data.exp < Date.now()) {
+      return null;
+    }
+    return data.userId;
+  } catch {
+    return null;
+  }
+}

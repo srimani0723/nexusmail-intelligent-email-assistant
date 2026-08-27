@@ -3,6 +3,7 @@ import { AuthService } from '../services/auth.service.js';
 import { sendSuccess, sendError } from '../utils/response.util.js';
 import { config } from '../config/env.js';
 import { logger } from '../utils/logger.util.js';
+import { createAuthToken } from '../utils/encryption.util.js';
 
 export class AuthController {
   /**
@@ -38,8 +39,9 @@ export class AuthController {
 
     try {
       const user = await AuthService.handleOAuthCallback(code);
+      const token = createAuthToken(user.id);
 
-      // Create and persist application session
+      // Create and persist application session (for same-origin sessions)
       if (req.session) {
         (req.session as any).userId = user.id;
         await new Promise<void>((resolve, reject) => {
@@ -50,7 +52,8 @@ export class AuthController {
         });
       }
 
-      res.redirect(`${config.CLIENT_URL}/inbox`);
+      // Redirect with token for robust cross-origin / proxy authentication
+      res.redirect(`${config.CLIENT_URL}/inbox?token=${encodeURIComponent(token)}`);
     } catch (err: any) {
       logger.error('OAuth callback failed', err);
       const errMsg = err?.message || 'auth_failed';
