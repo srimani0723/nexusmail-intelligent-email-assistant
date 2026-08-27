@@ -6,11 +6,10 @@
   publish = "dist"
   command = "npm run build"
 
-# Proxy /api calls to your production backend server (Render / Railway / etc.)
-# Replace destination URL with your actual deployed backend URL
+# Proxy /api calls to your production backend server on Render
 [[redirects]]
   from = "/api/*"
-  to = "https://nexusmail-intelligent-email-assistant.onrender.com"
+  to = "https://nexusmail-intelligent-email-assistant.onrender.com/api/:splat"
   status = 200
   force = true
 
