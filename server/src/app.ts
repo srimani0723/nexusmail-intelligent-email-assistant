@@ -11,6 +11,9 @@ import { generalLimiter } from './middlewares/rateLimiter.middleware.js';
 export function createApp(): express.Application {
   const app = express();
 
+  // Trust reverse proxy (Render / Netlify / Cloudflare) to ensure secure cookies work
+  app.set('trust proxy', 1);
+
   // Security Headers
   app.use(
     helmet({
@@ -22,7 +25,7 @@ export function createApp(): express.Application {
   // CORS Configuration
   app.use(
     cors({
-      origin: [config.CLIENT_URL, 'http://localhost:5173', 'http://127.0.0.1:5173'],
+      origin: [config.CLIENT_URL, 'https://nexusmail-intelligent-email-assistant.netlify.app', 'http://localhost:5173', 'http://127.0.0.1:5173'],
       credentials: true,
       methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
       allowedHeaders: ['Content-Type', 'Authorization', 'Cookie'],
@@ -40,10 +43,11 @@ export function createApp(): express.Application {
       secret: config.SESSION_SECRET,
       resave: false,
       saveUninitialized: false,
+      proxy: true,
       cookie: {
         httpOnly: true,
         secure: isProd,
-        sameSite: isProd ? 'strict' : 'lax',
+        sameSite: isProd ? 'none' : 'lax',
         maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days
       },
     })
