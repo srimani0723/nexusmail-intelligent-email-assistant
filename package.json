@@ -1,0 +1,26 @@
+{
+  "name": "intelligent-email-assistant",
+  "version": "1.0.0",
+  "description": "Production-ready Intelligent Email Assistant with Gmail integration and AI summarization & replies",
+  "private": true,
+  "scripts": {
+    "dev:server": "npm run dev --prefix server",
+    "dev:client": "npm run dev --prefix client",
+    "build:server": "npm run build --prefix server",
+    "build:client": "npm run build --prefix client",
+    "test:server": "npm run test --prefix server",
+    "lint": "npm run lint --prefix server && npm run lint --prefix client"
+  },
+  "keywords": [
+    "email",
+    "gmail",
+    "ai",
+    "gemini",
+    "assistant",
+    "react",
+    "express",
+    "prisma"
+  ],
+  "author": "",
+  "license": "MIT"
+}
