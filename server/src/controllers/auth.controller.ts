@@ -39,15 +39,22 @@ export class AuthController {
     try {
       const user = await AuthService.handleOAuthCallback(code);
 
-      // Create application session
+      // Create and persist application session
       if (req.session) {
         (req.session as any).userId = user.id;
+        await new Promise<void>((resolve, reject) => {
+          req.session.save((err) => {
+            if (err) reject(err);
+            else resolve();
+          });
+        });
       }
 
       res.redirect(`${config.CLIENT_URL}/inbox`);
     } catch (err: any) {
       logger.error('OAuth callback failed', err);
-      res.redirect(`${config.CLIENT_URL}/login?error=auth_failed`);
+      const errMsg = err?.message || 'auth_failed';
+      res.redirect(`${config.CLIENT_URL}/login?error=${encodeURIComponent(errMsg)}`);
     }
   }
 

@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useSearchParams } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
   Sparkles,
@@ -14,6 +14,7 @@ import {
   Check,
   Wand2,
   BookOpen,
+  AlertCircle,
 } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import { useTheme } from '../context/ThemeContext';
@@ -22,8 +23,11 @@ import { ReplyTone } from '../types';
 
 export const LoginPage: React.FC = () => {
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
   const { login } = useAuth();
   const { resolvedTheme, toggleTheme } = useTheme();
+
+  const authError = searchParams.get('error');
 
   // Interactive demo state on right panel
   const [selectedTone, setSelectedTone] = useState<ReplyTone>('Professional');
@@ -130,6 +134,29 @@ export const LoginPage: React.FC = () => {
             </div>
 
             <div className="space-y-3">
+              {/* OAuth Error Feedback Alert */}
+              {authError && (
+                <motion.div
+                  initial={{ opacity: 0, y: -6 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  className="p-3 rounded-xl bg-rose-50 dark:bg-rose-950/50 border border-rose-200 dark:border-rose-800/80 text-rose-700 dark:text-rose-300 text-xs flex items-start gap-2.5 shadow-2xs"
+                >
+                  <AlertCircle size={15} className="shrink-0 mt-0.5 text-rose-600 dark:text-rose-400" />
+                  <div className="space-y-0.5">
+                    <p className="font-bold">Authentication did not complete</p>
+                    <p className="text-[11px] opacity-90">
+                      {authError === 'access_denied'
+                        ? 'Access was denied or permissions were not granted.'
+                        : authError === 'missing_code'
+                        ? 'Google did not return an authorization code.'
+                        : authError === 'auth_failed'
+                        ? 'Failed to exchange tokens with Google. Please check your credentials.'
+                        : `Details: ${authError}`}
+                    </p>
+                  </div>
+                </motion.div>
+              )}
+
               {/* Google OAuth 2.0 CTA */}
               <motion.button
                 whileHover={{ scale: 1.02 }}
